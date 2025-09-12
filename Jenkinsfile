@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Docker image name (will be local only)
-        DOCKER_IMAGE = "springboot-hello1"
+        DOCKER_IMAGE = "springboot-hello"
         // Git repo
         GIT_REPO = "https://github.com/anuj2841/springboot-docker-demo.git"
     }
