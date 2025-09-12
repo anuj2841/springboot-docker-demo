@@ -18,14 +18,14 @@ pipeline {
         stage('Build with Maven') {
             steps {
                 echo 'Building Spring Boot project...'
-                sh 'mvn clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image locally...'
-                sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                bat "docker build -t ${DOCKER_IMAGE}:latest ."
             }
         }
     }
