@@ -1,0 +1,45 @@
+trigger:
+  branches:
+    include:
+      - master  # or your working branch name
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: springboot-hello
+  imageTag: $(Build.BuildId)
+  registry: myacranuj.azurecr.io   # ✅ Your actual ACR login server
+
+steps:
+- task: Maven@3
+  displayName: 'Build Spring Boot app with Maven'
+  inputs:
+    mavenPomFile: 'pom.xml'
+    goals: 'package'
+    options: '-DskipTests'
+
+- task: Docker@2
+  displayName: 'Build and push Docker image'
+  inputs:
+    command: buildAndPush
+    repository: $(registry)/$(imageName)
+    dockerfile: 'Dockerfile'
+    tags: |
+      $(imageTag)
+    containerRegistry: 'myacranuj'  # ✅ Replace this in Azure DevOps with the correct service connection name
+
+- task: AzureCLI@2
+  displayName: 'Deploy to AKS with Helm'
+  inputs:
+    azureSubscription: 'myAKSResourceGroup'  # ✅ Replace with your actual Azure service connection name
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "⛓ Getting AKS credentials"
+      az aks get-credentials --resource-group myAKSResourceGroup --name myAKSCluster2 --overwrite-existing
+
+      echo "🚀 Deploying with Helm"
+      helm upgrade --install springboot-hello ./helm-chart \
+        --set image.repository=$(registry)/$(imageName) \
+        --set image.tag=$(imageTag)
